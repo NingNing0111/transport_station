@@ -4,6 +4,7 @@ import UploadFile from './pages/UploadFile';
 import UploadMessage from './pages/UploadMessage';
 import Access from './pages/Access';
 import Transfer from './pages/Transfer';
+import Pickup from './pages/Pickup';
 import NotFound from './pages/NotFound';
 import Expired from './pages/Expired';
 
@@ -18,6 +19,7 @@ function App() {
         <Route path="/file/:shortCode" element={<Transfer />} />
         <Route path="/message/:shortCode" element={<Transfer />} />
         <Route path="/transfer/:shortCode" element={<Transfer />} />
+        <Route path="/pickup" element={<Pickup />} />
         <Route path="/not-found" element={<NotFound />} />
         <Route path="/expired" element={<Expired />} />
         <Route path="*" element={<NotFound />} />

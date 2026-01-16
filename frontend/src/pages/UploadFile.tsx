@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select } from '../components/ui/select';
+import Header from '../components/Header';
 import { initFileUpload, uploadFileChunk, completeFileUpload } from '../lib/api';
 import { Upload, CheckCircle, Copy } from 'lucide-react';
 
@@ -102,9 +103,18 @@ export default function UploadFile() {
     return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
   };
 
+  // 生成包含visitorCode的完整链接
+  const getFullLink = (shortLink: string, visitCode: string) => {
+    const url = new URL(shortLink);
+    url.searchParams.set('visitCode', visitCode);
+    return url.toString();
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Header />
+      <div className="flex items-center justify-center p-4 py-12">
+        <Card className="max-w-2xl w-full">
         <CardHeader>
           <CardTitle>上传文件</CardTitle>
           <CardDescription>选择文件并设置过期时间，生成取件码和短链接</CardDescription>
@@ -190,12 +200,12 @@ export default function UploadFile() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">短链接</label>
+                <label className="text-sm font-medium">短链接（包含取件码）</label>
                 <div className="flex space-x-2">
-                  <Input value={result.short_link} readOnly />
+                  <Input value={getFullLink(result.short_link, result.visit_code)} readOnly />
                   <Button
                     variant="outline"
-                    onClick={() => copyToClipboard(result.short_link)}
+                    onClick={() => copyToClipboard(getFullLink(result.short_link, result.visit_code))}
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -237,6 +247,7 @@ export default function UploadFile() {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

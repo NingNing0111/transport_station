@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import Header from '../components/Header';
 import { Lock } from 'lucide-react';
 
 export default function Access() {
@@ -30,8 +31,10 @@ export default function Access() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
+      <Header />
+      <div className="flex items-center justify-center p-4 py-12">
+        <Card className="max-w-md w-full">
         <CardHeader>
           <div className="flex items-center justify-center mb-4">
             <Lock className="h-12 w-12 text-purple-600" />
@@ -78,6 +81,7 @@ export default function Access() {
           </Button>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

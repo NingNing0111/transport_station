@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Select } from '../components/ui/select';
+import Header from '../components/Header';
 import { uploadMessage } from '../lib/api';
 import { MessageSquare, CheckCircle, Copy } from 'lucide-react';
 
@@ -38,9 +39,18 @@ export default function UploadMessage() {
     alert('已复制到剪贴板');
   };
 
+  // 生成包含visitorCode的完整链接
+  const getFullLink = (shortLink: string, visitCode: string) => {
+    const url = new URL(shortLink);
+    url.searchParams.set('visitCode', visitCode);
+    return url.toString();
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
+      <Header />
+      <div className="flex items-center justify-center p-4 py-12">
+        <Card className="max-w-2xl w-full">
         <CardHeader>
           <CardTitle>上传消息</CardTitle>
           <CardDescription>输入富文本内容并设置过期时间，生成阅读码和短链接</CardDescription>
@@ -96,12 +106,12 @@ export default function UploadMessage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">短链接</label>
+                <label className="text-sm font-medium">短链接（包含阅读码）</label>
                 <div className="flex space-x-2">
-                  <Input value={result.short_link} readOnly />
+                  <Input value={getFullLink(result.short_link, result.visit_code)} readOnly />
                   <Button
                     variant="outline"
-                    onClick={() => copyToClipboard(result.short_link)}
+                    onClick={() => copyToClipboard(getFullLink(result.short_link, result.visit_code))}
                   >
                     <Copy className="h-4 w-4" />
                   </Button>
@@ -143,6 +153,7 @@ export default function UploadMessage() {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

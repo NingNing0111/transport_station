@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import Header from '../components/Header';
 import { getTransfer, type TransferInfo } from '../lib/api';
 import { Download, FileText, MessageSquare, AlertCircle } from 'lucide-react';
 
@@ -55,10 +56,13 @@ export default function Transfer() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">加载中...</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <Header />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">加载中...</p>
+          </div>
         </div>
       </div>
     );
@@ -66,8 +70,10 @@ export default function Transfer() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100">
+        <Header />
+        <div className="flex items-center justify-center p-4 py-12">
+          <Card className="max-w-md w-full">
           <CardHeader>
             <div className="flex items-center justify-center mb-4">
               <AlertCircle className="h-12 w-12 text-red-600" />
@@ -81,6 +87,7 @@ export default function Transfer() {
             </Button>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
@@ -90,8 +97,10 @@ export default function Transfer() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Header />
+      <div className="flex items-center justify-center p-4 py-12">
+        <Card className="max-w-2xl w-full">
         <CardHeader>
           {transferInfo.type === 'file' ? (
             <>
@@ -159,6 +168,7 @@ export default function Transfer() {
           </Button>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

@@ -25,7 +25,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: transport_station_redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    command: redis-server --appendonly yes 
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -50,13 +50,13 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-transfer_user}:${POSTGRES_PASSWORD:-transfer_password}@postgres:5432/${POSTGRES_DB:-transfer_station}
       REDIS_URL: redis://:${REDIS_PASSWORD:-}@redis:6379
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_REGION: ${AWS_REGION:-us-east-1}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
       SERVER_HOST: 0.0.0.0
       SERVER_PORT: 3000
-      SHORT_LINK_BASE_URL: ${SHORT_LINK_BASE_URL}
-      FRONTEND_URL: ${FRONTEND_URL}
+      SHORT_LINK_BASE_URL: ${SHORT_LINK_BASE_URL:-http://localhost:3000/s}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:80}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     depends_on:
