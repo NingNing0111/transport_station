@@ -1,0 +1,101 @@
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: transport_station_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-transfer_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-transfer_password}
+      POSTGRES_DB: ${POSTGRES_DB:-transfer_station}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-transfer_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - transport_network
+    # 生产环境不暴露端口，仅内部访问
+    # ports:
+    #   - "5432:5432"
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: transport_station_redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - transport_network
+    # 生产环境不暴露端口，仅内部访问
+    # ports:
+    #   - "6379:6379"
+
+  # 后端服务
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: transport_station_backend
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-transfer_user}:${POSTGRES_PASSWORD:-transfer_password}@postgres:5432/${POSTGRES_DB:-transfer_station}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-}@redis:6379
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 3000
+      SHORT_LINK_BASE_URL: ${SHORT_LINK_BASE_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - transport_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 前端服务
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+    container_name: transport_station_frontend
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - transport_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  transport_network:
+    driver: bridge
