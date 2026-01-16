@@ -294,6 +294,36 @@ async def short_link_redirect(
     return RedirectResponse(url=f"{settings.frontend_url}/access/{short_code}")
 
 
+@app.get("/{short_code}")
+async def direct_short_link_redirect(
+    short_code: str,
+    visit_code: Optional[str] = Query(None),
+    db: Session = Depends(get_db)
+):
+    """直接短链接重定向（支持 /{short_code} 格式）"""
+    # 排除API路由和其他已知路径
+    excluded_paths = ["api", "s", "docs", "redoc", "openapi.json", "favicon.ico"]
+    if short_code in excluded_paths or short_code.startswith("api/"):
+        raise HTTPException(status_code=404, detail="Not Found")
+    
+    transfer = db.query(Transfer).filter(Transfer.short_code == short_code).first()
+    if not transfer:
+        return RedirectResponse(url=f"{settings.frontend_url}/not-found")
+    
+    if is_expired(transfer.expires_at):
+        return RedirectResponse(url=f"{settings.frontend_url}/expired")
+    
+    # 如果有访问码，直接重定向到访问页面
+    if visit_code and visit_code == transfer.visit_code:
+        if transfer.transfer_type == TransferType.FILE:
+            return RedirectResponse(url=f"{settings.frontend_url}/file/{short_code}?visitCode={visit_code}")
+        else:
+            return RedirectResponse(url=f"{settings.frontend_url}/message/{short_code}?visitCode={visit_code}")
+    
+    # 否则重定向到输入访问码页面
+    return RedirectResponse(url=f"{settings.frontend_url}/access/{short_code}")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host=settings.server_host, port=settings.server_port)

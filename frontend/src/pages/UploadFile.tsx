@@ -12,6 +12,9 @@ export default function UploadFile() {
   const [expiration, setExpiration] = useState('10m');
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadedSize, setUploadedSize] = useState(0);
+  const [currentChunk, setCurrentChunk] = useState(0);
+  const [totalChunks, setTotalChunks] = useState(0);
   const [result, setResult] = useState<{ short_link: string; visit_code: string } | null>(null);
   const navigate = useNavigate();
 
@@ -28,6 +31,9 @@ export default function UploadFile() {
 
     setUploading(true);
     setUploadProgress(0);
+    setUploadedSize(0);
+    setCurrentChunk(0);
+    setTotalChunks(0);
 
     try {
       // 1. 初始化上传
@@ -39,6 +45,7 @@ export default function UploadFile() {
       );
 
       const { short_code, chunk_count, chunk_size } = initResponse;
+      setTotalChunks(chunk_count);
 
       // 2. 分片上传
       const totalChunks = chunk_count;
@@ -49,9 +56,13 @@ export default function UploadFile() {
         const end = Math.min(start + chunk_size, file.size);
         const chunk = file.slice(start, end);
 
+        setCurrentChunk(i + 1);
+
         try {
           await uploadFileChunk(short_code, i, chunk);
           uploadedChunks++;
+          const uploadedBytes = Math.min((i + 1) * chunk_size, file.size);
+          setUploadedSize(uploadedBytes);
           const progress = Math.round((uploadedChunks / totalChunks) * 100);
           setUploadProgress(progress);
         } catch (error) {
@@ -67,10 +78,13 @@ export default function UploadFile() {
         visit_code: completeResponse.visit_code,
       });
       setUploadProgress(100);
+      setUploadedSize(file.size);
     } catch (error: any) {
       alert(error.message || '上传失败，请重试');
       console.error(error);
       setUploadProgress(0);
+      setUploadedSize(0);
+      setCurrentChunk(0);
     } finally {
       setUploading(false);
     }
@@ -122,17 +136,29 @@ export default function UploadFile() {
                 </Select>
               </div>
 
-              {uploading && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>上传进度</span>
-                    <span>{uploadProgress}%</span>
+              {uploading && file && (
+                <div className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium text-gray-700">上传进度</span>
+                    <span className="font-semibold text-blue-600">{uploadProgress}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                     <div
-                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300 flex items-center justify-end pr-2"
                       style={{ width: `${uploadProgress}%` }}
-                    ></div>
+                    >
+                      {uploadProgress > 10 && (
+                        <span className="text-xs text-white font-medium">{uploadProgress}%</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>
+                      {formatFileSize(uploadedSize)} / {formatFileSize(file.size)}
+                    </span>
+                    <span>
+                      分片 {currentChunk} / {totalChunks}
+                    </span>
                   </div>
                 </div>
               )}

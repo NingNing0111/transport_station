@@ -64,7 +64,11 @@ export const initFileUpload = async (
   formData.append('mime_type', mimeType);
   formData.append('expiration', expiration);
   
-  const response = await api.post<InitUploadResponse>('/api/upload/file/init', formData);
+  const response = await api.post<InitUploadResponse>('/api/upload/file/init', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 
@@ -92,7 +96,11 @@ export const completeFileUpload = async (shortCode: string): Promise<CompleteUpl
   const formData = new FormData();
   formData.append('short_code', shortCode);
   
-  const response = await api.post<CompleteUploadResponse>('/api/upload/file/complete', formData);
+  const response = await api.post<CompleteUploadResponse>('/api/upload/file/complete', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 

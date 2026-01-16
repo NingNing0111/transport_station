@@ -20,9 +20,11 @@ class Settings(BaseSettings):
     server_port: int = 3000
     
     # Short Link
-    short_link_base_url: str = "http://localhost:3000/s"
+    # 可通过环境变量 SHORT_LINK_BASE_URL 设置
+    short_link_base_url: str = "http://localhost:3000"
     
     # Frontend
+    # 可通过环境变量 FRONTEND_URL 设置（例如：FRONTEND_URL=http://localhost:5173）
     frontend_url: str = "http://localhost:5173"
     
     # Upload settings
